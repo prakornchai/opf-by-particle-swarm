@@ -1,0 +1,40 @@
+function [FT,pp] = find_cost_final(p);
+Lf_ieee30bus_bygauss;
+%Power generator
+busdata(2,7)=p(1);
+busdata(5,7)=p(2);
+busdata(8,7)=p(3);
+busdata(11,7)=p(4);
+busdata(13,7)=p(5);
+%Voltage of Gen
+busdata(1,3)=p(6);
+busdata(2,3)=p(7);
+busdata(5,3)=p(8);
+busdata(8,3)=p(9);
+busdata(11,3)=p(10);
+busdata(13,3)=p(11);
+%Transformer Tap
+linedata(11,6)=p(12);
+linedata(12,6)=p(13);
+linedata(15,6)=p(14);
+linedata(36,6)=p(15);
+%load flow
+
+lfybus;                            % form the bus admittance matrix
+lfgauss;                % Load flow solution by Gauss-Seidel method
+busout;              % Prints the power flow solution on the screen
+lineflow;          % Computes and displays the line flow and losses
+pp=[Pg(1);Pg(2);Pg(5);Pg(8);Pg(11);Pg(13);];
+%find cost
+F = zeros(6,1);
+c = [0;0;0;0;0;0];
+b = [2;1.75;1;3.25;3;3];
+a = [0.00375;0.0175;0.0625;0.00834;0.02500;0.02500];
+for i=1:6,
+    F(i)=(a(i)*pp(i)^2)+b(i)*pp(i)+c(i);
+end
+FT = sum(F);
+if pp(1)<50|pp(1)>200
+    FT=FT+10000;
+end
+
